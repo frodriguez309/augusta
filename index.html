@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Augusta · Mis ramos</title>
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-title" content="Augusta">
+<meta name="theme-color" content="#FBF7F0">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{--bg:#FBF7F0;--card:#fff;--ink:#1F2A37;--muted:#5B6675;--line:#E6DFD3}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;touch-action:manipulation}
+body{margin:0;background:var(--bg);color:var(--ink);font:20px/1.55 ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:900px;margin:0 auto;padding:36px 16px 60px}
+h1{font-size:2.1rem;line-height:1.2;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 26px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+a.ramo{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 1px 2px rgba(31,42,55,.06),0 4px 14px rgba(31,42,55,.06);-webkit-tap-highlight-color:transparent;transition:transform .15s}
+a.ramo:active{transform:scale(.98)}
+.ico{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:34px;background:#EFE7FB}
+.ramo h2{margin:4px 0 0;font-size:1.45rem}
+.ramo p{margin:0;color:var(--muted);font-size:1rem}
+.st{font-size:.9rem;font-weight:700;margin-top:6px}
+.go{margin-top:auto;padding-top:8px;font-weight:800;color:#5E3AA8}
+.foot{margin-top:28px;font-size:.88rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Hola, Augusta 👋</h1>
+  <p class="sub">Elige qué quieres estudiar. Lo que avances queda guardado en este iPad.</p>
+  <div class="grid">
+    <a class="ramo" href="lenguaje/">
+      <div class="ico">📖</div>
+      <h2>Lenguaje</h2>
+      <p>Los sustantivos, los artículos y los adjetivos.</p>
+      <div class="st" id="st-len"></div>
+      <div class="go">Entrar →</div>
+    </a>
+  </div>
+  <p class="foot">Consejo: en Safari, toca Compartir → «Agregar a inicio» para tener esta página como una app.</p>
+</main>
+<script>
+(function () {
+  function read(k) { try { return JSON.parse(localStorage.getItem(k)) || null; } catch (e) { return null; } }
+  var db = read("augusta-lenguaje-2b-v1"), el = document.getElementById("st-len");
+  if (!db) { el.innerHTML = '<span style="color:#5B6675">Sin empezar</span>'; return; }
+  var done = Object.keys(db.done || {}).filter(function (k) { return db.done[k]; }).length, h = (db.history || []).slice(-1)[0];
+  el.innerHTML = '<span style="color:#23915F">' + done + ' de 5 lecciones · ⭐ ' + (db.stars || 0) + (h ? ' · última prueba: nota ' + h.nota.toFixed(1).replace(".", ",") : '') + '</span>';
+})();
+</script>
+</body>
+</html>

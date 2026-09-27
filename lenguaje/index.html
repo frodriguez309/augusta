@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Augusta · Lenguaje</title>
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-title" content="Augusta">
+<meta name="theme-color" content="#FBF7F0">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<style>
+
+:root{
+  --bg:#FBF7F0; --card:#FFFFFF; --ink:#1F2A37; --muted:#5B6675; --line:#E6DFD3;
+  --blue:#3A86D6; --blue-soft:#DCEBFA; --blue-ink:#1D5FA8;
+  --orange:#F0A43C; --orange-soft:#FDEBD1; --orange-ink:#A4610A;
+  --fig:#C9CDD2; --fig-ink:#3A3F45;
+  --green:#23915F; --green-soft:#DFF3E9; --red:#D64545; --red-soft:#FBE3E3;
+  --gold:#E9B325; --gold-soft:#FFF4D3;
+  --radius:16px; --shadow:0 1px 2px rgba(31,42,55,.06),0 4px 14px rgba(31,42,55,.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;touch-action:manipulation}
+button,.opt,.slot,.chip,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.55 ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3,h4{line-height:1.2;margin:0 0 .5em}
+h1{font-size:1.9rem} h2{font-size:1.45rem} h3{font-size:1.15rem} h4{font-size:1rem}
+p{margin:.4em 0 .8em}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit;color:inherit}
+a{color:var(--blue-ink)}
+.muted{color:var(--muted)} .small{font-size:.86rem}
+.hide{display:none!important}
+
+/* ---------- barra superior ---------- */
+header.top{position:sticky;top:0;z-index:20;background:rgba(251,247,240,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:960px;margin:0 auto;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{font-weight:800;font-size:1.05rem;margin-right:auto;white-space:nowrap}
+.brand span{color:var(--blue)}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;font-size:.92rem;font-weight:600}
+nav.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+@media (max-width:900px){.top-in{gap:8px}.brand{font-size:.95rem}nav.tabs{gap:4px}nav.tabs button{padding:5px 10px;font-size:.84rem}}
+
+main{max-width:960px;margin:0 auto;padding:20px 16px 80px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 22px;margin:0 0 18px}
+@media (max-width:560px){.card{padding:18px 16px}}
+
+/* ---------- inicio ---------- */
+.hero{padding:28px 26px}
+.hero h1 span{color:var(--blue)}
+.paths{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:10px}
+@media (max-width:760px){.paths{grid-template-columns:1fr}}
+.path{border:1px solid var(--line);border-radius:14px;padding:16px;background:#FFFDF9;display:flex;flex-direction:column;gap:6px}
+.path .step{font-size:.8rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.path h3{margin:0}
+.path p{margin:0 0 6px;font-size:.95rem;color:var(--muted);flex:1}
+.path .state{font-size:.85rem;font-weight:700}
+
+/* ---------- botones ---------- */
+.btn{border:0;border-radius:12px;padding:10px 18px;font-weight:700;background:var(--ink);color:#fff}
+.btn.blue{background:var(--blue)} .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.small{padding:6px 12px;font-size:.9rem;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---------- fracciones ---------- */
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.08;font-variant-numeric:tabular-nums;font-weight:700}
+.fr>span{padding:0 .18em;min-width:.9em;text-align:center}
+.fr>.n{border-bottom:2px solid currentColor}
+.mx{display:inline-flex;align-items:center;vertical-align:middle;font-weight:700}
+.mx>.w{margin-right:.02em}
+.big{font-size:1.35em}
+.fin{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;gap:3px;margin:0 .15em}
+.fin .bar{width:100%;height:2px;background:var(--ink);border-radius:2px}
+.inp{font-size:max(16px,1em);width:3.1em;height:2.1em;text-align:center;border:1.5px solid #CFC6B8;border-radius:9px;background:#FFFDF9;font-weight:700;padding:0 2px}
+.inp.w{width:2.4em}
+.inp:focus{outline:3px solid var(--blue-soft);border-color:var(--blue)}
+.inp.ok{border-color:var(--green);background:var(--green-soft)}
+.inp.bad{border-color:var(--red);background:var(--red-soft)}
+.inp.wide{width:12em;text-align:left;padding:0 10px}
+
+/* ---------- módulo ---------- */
+.lesson-nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+.lesson-nav button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 11px;font-size:.88rem;font-weight:600}
+.lesson-nav button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.lesson-nav button.done::after{content:" ✓";color:var(--green)}
+.lesson-nav button.on.done::after{color:#fff}
+.book{display:inline-block;font-size:.85rem;font-weight:700;color:var(--blue-ink);background:var(--blue-soft);border-radius:999px;padding:3px 12px;margin-bottom:10px}
+.sec-num{display:inline-block;background:var(--blue-soft);color:var(--blue-ink);font-weight:800;border-radius:8px;padding:1px 9px;margin-right:6px}
+.box{border-radius:12px;padding:12px 16px;margin:12px 0}
+.box.tip{background:var(--blue-soft)}
+.box.warn{background:var(--red-soft)}
+.box.gold{background:var(--gold-soft)}
+.box.green{background:var(--green-soft)}
+.box h4{margin:0 0 4px}
+.lab{border:1px dashed #CFC6B8;border-radius:14px;padding:14px;margin:14px 0;background:#FFFDF9}
+.lab-title{font-size:.8rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--orange-ink);margin-bottom:8px}
+.ctrl{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:4px 6px}
+.ctrl button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:1.1rem}
+.ctrl .v{min-width:1.6em;text-align:center;font-weight:800}
+.eq{font-size:1.3em;margin:8px 0;display:flex;align-items:center;gap:.35em;flex-wrap:wrap}
+table.t{border-collapse:collapse;width:100%;margin:10px 0;font-size:.95rem}
+table.t th,table.t td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:middle}
+table.t th{background:#F4EFE6}
+.tablewrap{overflow-x:auto}
+.check{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.check-title{font-weight:800;margin-bottom:6px}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+svg{max-width:100%;height:auto;display:block}
+.fig{margin:10px 0}
+ul.clean{list-style:none;padding:0;margin:0}
+.tick{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.tick input{width:22px;height:22px;margin-top:3px;flex:none}
+
+/* ---------- preguntas ---------- */
+.part-h{margin:26px 0 10px;font-size:1.2rem}
+.q{position:relative}
+.q-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.q-num{flex:none;min-width:34px;height:34px;border-radius:10px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;padding:0 6px}
+.q-text{flex:1;padding-top:3px}
+.q-pts{flex:none;font-size:.82rem;color:var(--muted);font-weight:700;padding-top:6px;white-space:nowrap}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.opts.tall{grid-template-columns:1fr 1fr}
+@media (max-width:640px){.opts{grid-template-columns:1fr 1fr}.opts.tall{grid-template-columns:1fr}}
+.opt{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;text-align:left;min-height:58px}
+.opt .l{flex:none;width:28px;height:28px;border-radius:8px;background:#F1ECE3;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem}
+.opt.sel{border-color:var(--blue);background:var(--blue-soft)}
+.opt.sel .l{background:var(--blue);color:#fff}
+.opt.ok{border-color:var(--green);background:var(--green-soft)}
+.opt.ok .l{background:var(--green);color:#fff}
+.opt.bad{border-color:var(--red);background:var(--red-soft)}
+.opt.bad .l{background:var(--red);color:#fff}
+.locked .opt{cursor:default}
+.sub{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.sub:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.sub-h{font-weight:700;margin-bottom:6px}
+.line{display:flex;align-items:center;gap:.45em;flex-wrap:wrap;margin:8px 0;font-size:1.1em}
+.calc{font-size:.9em;color:var(--muted);display:inline-flex;align-items:center;gap:.35em;flex-wrap:wrap;margin-left:.6em}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.seg button{border:0;background:#fff;padding:8px 14px;font-weight:800;min-width:44px;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button.sel{background:var(--blue);color:#fff}
+.seg.ok{border-color:var(--green)} .seg.bad{border-color:var(--red)}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:6px 12px;font-size:1.1em}
+.chip.used{opacity:.3}
+.slots{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0;font-size:1.1em}
+.slot{min-width:56px;min-height:58px;border:2px dashed #CFC6B8;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#FFFDF9;cursor:pointer}
+.slot.filled{border-style:solid;border-color:var(--blue);background:var(--blue-soft)}
+.fb{border-radius:12px;padding:10px 14px;margin-top:12px;font-size:.95rem}
+.fb.ok{background:var(--green-soft)} .fb.bad{background:var(--red-soft)} .fb.part{background:var(--gold-soft)}
+.fb b.tag{display:inline-block;margin-right:6px}
+.fb a{font-weight:700}
+.q-actions{margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.score-chip{font-weight:800;font-size:.9rem;border-radius:999px;padding:3px 10px;background:#F1ECE3}
+.score-chip.ok{background:var(--green-soft);color:var(--green)}
+.score-chip.bad{background:var(--red-soft);color:var(--red)}
+.score-chip.part{background:var(--gold-soft);color:#8A6A0A}
+.gridwrap{touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.tools button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:6px 12px;font-weight:700}
+.tools button.sel{border-color:var(--orange);background:var(--orange-soft)}
+.fig3{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}
+.fig3 .seg{display:grid;grid-template-columns:repeat(3,1fr);width:100%}
+.fig3 .seg button{min-width:0;padding:9px 4px;font-size:.88rem}
+.fig3 .cell{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+
+/* ---------- barra del ensayo ---------- */
+.testbar{position:sticky;top:calc(var(--hdr,58px) + 8px);z-index:10;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--ink);color:#fff;border-radius:14px;padding:10px 16px;margin-bottom:16px}
+.testbar .grow{flex:1}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:1.2rem}
+.timer.late{color:#FF9A9A}
+.progress{height:8px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;min-width:120px;flex:1}
+.progress i{display:block;height:100%;background:var(--gold);width:0}
+
+/* ---------- resultados ---------- */
+.result-top{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.nota{font-size:3rem;font-weight:900;line-height:1}
+.nota.ok{color:var(--green)} .nota.bad{color:var(--red)}
+.meter{height:12px;background:#F1ECE3;border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%}
+.focos{display:grid;gap:10px;margin-top:10px}
+.foco{display:grid;grid-template-columns:1fr 150px 64px;gap:12px;align-items:center;font-size:.95rem}
+@media (max-width:640px){.foco{grid-template-columns:1fr 70px}.foco .meter{grid-column:1/-1}}
+.foco b{font-variant-numeric:tabular-nums;text-align:right}
+.hist td,.hist th{font-size:.92rem}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+
+/* ================= Lenguaje: color propio ================= */
+:root{ --blue:#8A5CD6; --blue-soft:#EFE7FB; --blue-ink:#5E3AA8; --orange:#F08A24; --orange-soft:#FDEBD1; --orange-ink:#A4610A; --ca:#E07A12; --cs:#2F7FD8; --cj:#2E9E5B; }
+.brand span{color:var(--blue)}
+
+/* etiqueta de fuente */
+.src{display:inline-block;font-size:.8rem;font-weight:700;border-radius:999px;padding:3px 11px;margin:0 6px 10px 0}
+.src.miss{background:#FDEBD1;color:#8A5210}
+.src.libro{background:var(--blue-soft);color:var(--blue-ink)}
+
+/* ================= carta ================= */
+.letter{background:#FFFDF6;border:1px solid #E7DDC7;border-radius:6px;box-shadow:0 2px 10px rgba(80,60,20,.08);padding:18px 20px;font-family:Georgia,"Times New Roman",serif;font-size:1rem;line-height:1.55;max-width:620px}
+.letter .pt{border-radius:8px;padding:3px 6px;margin:2px -6px;transition:background .2s,outline .2s}
+.letter .pt.enc,.letter .pt.fir{text-align:right}
+.letter .pt.cie{margin-top:8px}
+.letter .pt p{margin:0 0 .6em}
+.letter .pt p:last-child{margin:0}
+.letter.tap .pt{cursor:pointer;outline:2px dashed transparent}
+.letter.tap .pt:hover{outline-color:#D8CFF0}
+.pt.hl{background:#FFF1A8;outline:2px solid #E9B325!important}
+.pt.ok{background:var(--green-soft);outline:2px solid var(--green)!important}
+.pt.bad{background:var(--red-soft);outline:2px solid var(--red)!important}
+.pt .tag{display:inline-block;font:700 .72rem/1.2 ui-rounded,system-ui,sans-serif;background:var(--ink);color:#fff;border-radius:6px;padding:2px 7px;margin-right:6px;vertical-align:middle}
+
+/* ================= noticia ================= */
+.news{background:#fff;border:1px solid #DAD6CF;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.06);padding:16px 18px;max-width:660px;font-family:Georgia,"Times New Roman",serif}
+.news .meta{display:flex;justify-content:space-between;font:600 .78rem/1.2 ui-rounded,system-ui,sans-serif;color:var(--muted);border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:8px}
+.news .pt{border-radius:8px;padding:3px 6px;margin:2px -6px}
+.news .pt.tit{font-size:1.45rem;font-weight:800;line-height:1.2}
+.news .pt.baj{font-size:1.02rem;color:#444;font-style:italic}
+.news .pt p{margin:0 0 .55em}
+.news .pt p:last-child{margin:0}
+.news.tap .pt{cursor:pointer;outline:2px dashed transparent}
+
+/* ================= figuras de la profesora ================= */
+.missfig{margin:14px 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;cursor:zoom-in}
+.missfig img{display:block;width:100%;height:auto}
+.missfig figcaption{font-size:.82rem;color:var(--muted);padding:7px 12px;border-top:1px solid var(--line);background:#FFFDF9}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.gallery button{border:1px solid var(--line);border-radius:12px;background:#fff;padding:0;overflow:hidden;text-align:left}
+.gallery img{display:block;width:100%;height:150px;object-fit:cover;object-position:top}
+.gallery span{display:block;font-size:.85rem;font-weight:700;padding:7px 10px}
+.lightbox{position:fixed;inset:0;z-index:60;background:#16121E;display:flex;flex-direction:column}
+.lightbox .lb-top{display:flex;gap:10px;align-items:center;padding:10px 14px;color:#fff}
+.lightbox .lb-top b{flex:1;font-size:.95rem}
+.lightbox .lb-top button,.lightbox .lb-top a{border:0;border-radius:10px;padding:8px 14px;font-weight:700;background:#fff;color:#222;text-decoration:none;font-size:.9rem}
+.lightbox .lb-img{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:0 10px 14px;text-align:center}
+.lightbox .lb-img img{max-width:100%;height:auto;border-radius:8px;background:#fff}
+
+/* ================= línea de tiempo ================= */
+.timeline{position:relative;margin:12px 0;padding-left:26px}
+.timeline:before{content:"";position:absolute;left:9px;top:4px;bottom:4px;width:3px;background:var(--blue-soft);border-radius:3px}
+.timeline .ev{position:relative;margin:0 0 12px}
+.timeline .ev:before{content:"";position:absolute;left:-22px;top:5px;width:13px;height:13px;border-radius:50%;background:var(--blue);border:3px solid #fff;box-shadow:0 0 0 1px var(--blue)}
+.timeline .ev b{color:var(--blue-ink)}
+.timeline .cat{display:inline-block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#F1ECE3;border-radius:6px;padding:1px 7px;margin-left:6px;color:var(--muted)}
+
+/* ================= preguntas especiales ================= */
+.orderq .pool,.orderq .dest{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.orderq .it{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;text-align:left;display:flex;gap:10px;align-items:flex-start}
+.orderq .it .n{flex:none;width:26px;height:26px;border-radius:8px;background:var(--blue);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.orderq .it.used{opacity:.35}
+.orderq .dest .it{border-color:var(--blue);background:var(--blue-soft)}
+.orderq .dest .it.ok{border-color:var(--green);background:var(--green-soft)}
+.orderq .dest .it.bad{border-color:var(--red);background:var(--red-soft)}
+.orderq .dest .it.ok .n{background:var(--green)} .orderq .dest .it.bad .n{background:var(--red)}
+.clsq .crow{display:flex;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:9px 0;flex-wrap:wrap}
+.clsq .crow .tx{flex:1;min-width:200px}
+.clsq .crow.ok .tx{color:var(--green)} .clsq .crow.bad .tx{color:var(--red)}
+.pre{margin:4px 0 12px}
+.qsrc{font-size:.78rem;color:var(--muted);font-weight:700;margin-bottom:6px}
+.big-q{font-size:1.05rem}
+.w6{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+@media (max-width:560px){.w6{grid-template-columns:repeat(2,1fr)}}
+.w6 div{border-radius:12px;padding:10px;background:var(--blue-soft);text-align:center;font-weight:800;color:var(--blue-ink)}
+.w6 div small{display:block;font-weight:600;color:var(--ink);font-size:.8rem;margin-top:4px}
+.purp{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0}
+@media (max-width:760px){.purp{grid-template-columns:repeat(2,1fr)}}
+.purp div{border-radius:12px;padding:10px;font-size:.88rem}
+.purp div b{display:block;font-size:.98rem;margin-bottom:3px}
+.pc1{background:#DCEBFA}.pc2{background:#FBE3EC}.pc3{background:#DFF3E9}.pc4{background:#ECE6FA}.pc5{background:#FFF4D3}
+.tbl-mini td,.tbl-mini th{font-size:.9rem}
+.hl-o{background:#FBE3EC;border-radius:4px;padding:0 3px;font-weight:700}
+.hl-h{background:#DFF3E9;border-radius:4px;padding:0 3px;font-weight:700}
+.counter{font-size:.85rem;font-weight:700;color:var(--muted);margin-bottom:8px}
+.counter b{color:var(--green)}
+.picker{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.picker button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font-weight:700;font-size:.9rem}
+.picker button.sel{border-color:var(--blue);background:var(--blue-soft)}
+
+/* ================= Augusta (2° básico) ================= */
+body{font-size:20px}
+h1{font-size:2rem} h2{font-size:1.55rem}
+.bigtxt{font-size:1.12em}
+.c-a{color:var(--ca)!important;font-weight:800}
+.c-s{color:var(--cs)!important;font-weight:800}
+.c-j{color:var(--cj)!important;font-weight:800}
+.say{border:0;background:var(--blue-soft);border-radius:50%;width:44px;height:44px;font-size:1.25rem;line-height:1;cursor:pointer;vertical-align:middle;flex:none;margin-right:6px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.say:active{transform:scale(.94)}
+.box .say{float:left;margin:0 10px 4px 0}
+.emo{font-size:1.5em;vertical-align:middle;margin-left:4px}
+.blank{display:inline-block;min-width:70px;border-bottom:3px solid var(--ink);margin:0 4px}
+.opt{min-height:64px;font-size:1.08em}
+.opt .l{width:32px;height:32px}
+.catgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:10px 0}
+.catcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.catcard .ct{font-weight:800;font-size:1.1em;margin-bottom:4px}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.twocol{grid-template-columns:1fr}}
+.examples{margin-top:8px;font-weight:700}
+.pairs td{font-size:1.15em}
+.arttable td,.arttable th{text-align:center;font-size:1.05em}
+.arttable td.c-a{font-size:1.3em}
+.bigphrase{display:flex;gap:14px;align-items:center;font-size:1.6rem;margin:12px 0;flex-wrap:wrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-weight:700;font-size:1rem}
+.chip.on{border-color:var(--blue);background:var(--blue-soft)}
+.chip.c-j.on{border-color:var(--cj);background:#DFF3E9}
+.chip.c-a.on{border-color:var(--ca);background:#FDEBD1}
+.chip.c-s.on{border-color:var(--cs);background:#DCEBFA}
+.sent{font-size:1.45rem;line-height:2.2;margin:8px 0}
+.word{cursor:pointer;border-radius:10px;padding:2px 6px;outline:2px dashed transparent}
+.word:hover{outline-color:#D8CFF0}
+.pens{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
+.pen{border:3px solid transparent;border-radius:12px;padding:8px 14px;font-weight:800;color:#fff;font-size:1rem}
+.pen.p-a{background:var(--ca)} .pen.p-s{background:var(--cs)} .pen.p-j{background:var(--cj)} .pen.p-x{background:#8A8F98}
+.pen.sel{border-color:var(--ink);box-shadow:0 0 0 3px #fff inset}
+.pw{border:2px solid var(--line);background:#fff;border-radius:12px;padding:4px 10px;font-size:1.3rem;font-weight:700;margin:3px 0;line-height:1.5}
+.pw.r-a{background:var(--ca);border-color:var(--ca);color:#fff}
+.pw.r-s{background:var(--cs);border-color:var(--cs);color:#fff}
+.pw.r-j{background:var(--cj);border-color:var(--cj);color:#fff}
+.pw.wrong{outline:3px solid var(--red);outline-offset:2px}
+.pw.wrong[data-should]::after{content:" → " attr(data-should);font-size:.7em}
+.pw.right{outline:3px solid #9FD9B7;outline-offset:2px}
+.brow2{display:flex;gap:10px;align-items:center;margin:8px 0;flex-wrap:wrap}
+.blab{min-width:110px}
+.phrase{font-size:1.7rem;margin:12px 0;padding:10px 14px;background:#FFFDF6;border:2px dashed var(--line);border-radius:14px}
+.fixrow{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:1.15em;font-weight:700}
+.bad-x{color:var(--red);text-decoration:line-through}
+.good-v{color:var(--green)}
+.stars{margin-left:8px;color:#A4610A}
+.clsq .crow .tx{font-size:1.25em;font-weight:700}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <a class="brand" href="../" style="text-decoration:none;color:inherit">← Ramos · <span>Lenguaje 2°</span></a>
+  <nav class="tabs" id="tabs">
+    <button data-go="inicio">Inicio</button>
+    <button data-go="aprender">1 · Aprender</button>
+    <button data-go="ensayo">2 · Pruebas</button>
+    <button data-go="resultados">Mis resultados</button>
+  </nav>
+</div></header>
+
+<main id="app">
+
+<!-- ================= INICIO ================= -->
+<section id="v-inicio" class="view">
+  <div class="card hero">
+    <h1><button type="button" class="say noread" data-for="#introTxt" aria-label="Escuchar">🔊</button> Hola, Augusta 👋</h1>
+    <div id="introTxt"><p>Vamos a preparar tu prueba de <b>Lenguaje</b>. Vas a aprender los <b class="c-s">sustantivos</b>, los <b class="c-a">artículos</b> y los <b class="c-j">adjetivos</b>.</p>
+    <p>Si quieres que te lea, toca el botón 🔊.</p></div>
+    <div class="paths" style="grid-template-columns:1fr 1fr">
+      <div class="path"><div class="step">Paso 1</div><h3>📖 Aprender</h3><p>5 lecciones cortas con juegos.</p><div class="state" id="st-aprender"></div><button class="btn blue" data-go="aprender">Empezar</button></div>
+      <div class="path"><div class="step">Paso 2</div><h3>📝 Pruebas</h3><p>Pruebas de ensayo con preguntas nuevas cada vez.</p><div class="state" id="st-ensayo"></div><button class="btn" data-go="ensayo">Ir a las pruebas</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= APRENDER ================= -->
+<section id="v-aprender" class="view hide">
+  <div class="lesson-nav" id="lessonNav"></div>
+
+  <!-- 1 -->
+  <div class="card lesson" data-sec="1" data-title="Sustantivos">
+    <h2><span class="sec-num">1</span>¿Qué es un sustantivo?</h2>
+    <div class="box tip bigtxt" id="l1a"><button type="button" class="say noread" data-for="#l1a" aria-label="Escuchar">🔊</button> Los <b class="c-s">sustantivos</b> son palabras que usamos para <b>nombrar</b> lo que vemos o sentimos.</div>
+    <p class="bigtxt">Los sustantivos nombran…</p>
+    <div class="catgrid">
+      <div class="catcard"><div class="ct">👩 Personas</div><div>mamá · niño · profesora</div></div>
+      <div class="catcard"><div class="ct">🐱 Animales</div><div>gato · perro · conejo</div></div>
+      <div class="catcard"><div class="ct">🌳 Plantas</div><div>árbol · flor</div></div>
+      <div class="catcard"><div class="ct">✏️ Objetos</div><div>lápiz · leche · pelota</div></div>
+      <div class="catcard"><div class="ct">🏫 Lugares</div><div>colegio · gimnasio · casa</div></div>
+    </div>
+    <div class="box gold" id="l1b"><button type="button" class="say noread" data-for="#l1b" aria-label="Escuchar">🔊</button> <b>Truco:</b> si puedes poner <b>«el», «la», «un» o «una»</b> delante, es un sustantivo: <i>el gato, la flor, un lápiz</i>. En cambio, «saltar» dice lo que hacemos, y «grande» dice cómo es algo: no son sustantivos.</div>
+    <div class="lab"><div class="lab-title">Juega · ¿es un sustantivo?</div><div data-practice="sust" data-need="4"></div></div>
+  </div>
+
+  <!-- 2 -->
+  <div class="card lesson" data-sec="2" data-title="Comunes y propios">
+    <h2><span class="sec-num">2</span>Sustantivos comunes y propios</h2>
+    <div class="twocol">
+      <div class="box tip" id="l2a"><button type="button" class="say noread" data-for="#l2a" aria-label="Escuchar">🔊</button> <h4>Comunes</h4>Nombran personas, animales, plantas, objetos y lugares <b>en general</b>. Se escriben con <b>minúscula</b>.<div class="examples">perro · ciudad · niña · país</div></div>
+      <div class="box gold" id="l2b"><button type="button" class="say noread" data-for="#l2b" aria-label="Escuchar">🔊</button> <h4>Propios</h4>Son el <b>nombre</b> de una persona, un lugar o una mascota. Empiezan con <b>MAYÚSCULA</b>.<div class="examples">Camila · Andrés · Soto · Concón · Santiago · Chile · Tobby · Kitty</div></div>
+    </div>
+    <div class="tablewrap"><table class="t pairs">
+      <tr><th>Común</th><th>Propio</th></tr>
+      <tr><td>niña 👧</td><td><b>A</b>ugusta</td></tr>
+      <tr><td>perro 🐶</td><td><b>T</b>obby</td></tr>
+      <tr><td>ciudad 🏙️</td><td><b>S</b>antiago</td></tr>
+      <tr><td>país 🗺️</td><td><b>C</b>hile</td></tr>
+    </table></div>
+    <div class="lab"><div class="lab-title">Juega · común o propio</div><div data-practice="comun,mayus" data-need="4"></div></div>
+  </div>
+
+  <!-- 3 -->
+  <div class="card lesson" data-sec="3" data-title="Artículos">
+    <h2><span class="sec-num">3</span>Los artículos</h2>
+    <div class="box tip bigtxt" id="l3a"><button type="button" class="say noread" data-for="#l3a" aria-label="Escuchar">🔊</button> Los <b class="c-a">artículos</b> son palabras que <b>acompañan al sustantivo</b>. Nos dicen si es <b>femenino o masculino</b> (el género) y si es <b>uno o más de uno</b> (el número).</div>
+    <p class="bigtxt"><b>Singular</b> = uno: <i>la casa</i> 🏠 · <b>Plural</b> = más de uno: <i>las casas</i> 🏠🏠</p>
+    <div class="tablewrap"><table class="t arttable">
+      <tr><th></th><th>Masculino<br><span class="small">(uno)</span></th><th>Masculino<br><span class="small">(más de uno)</span></th><th>Femenino<br><span class="small">(una)</span></th><th>Femenino<br><span class="small">(más de una)</span></th></tr>
+      <tr><td><b>Definidos</b></td><td class="c-a">el</td><td class="c-a">los</td><td class="c-a">la</td><td class="c-a">las</td></tr>
+      <tr><td><b>Indefinidos</b></td><td class="c-a">un</td><td class="c-a">unos</td><td class="c-a">una</td><td class="c-a">unas</td></tr>
+    </table></div>
+    <div class="lab"><div class="lab-title">Pruébalo · elige una palabra y mira qué artículo lleva</div><div id="artX"></div></div>
+    <div class="lab"><div class="lab-title">Juega · artículos, género y número</div><div data-practice="art,gen" data-need="5"></div></div>
+  </div>
+
+  <!-- 4 -->
+  <div class="card lesson" data-sec="4" data-title="Adjetivos">
+    <h2><span class="sec-num">4</span>Los adjetivos calificativos</h2>
+    <div class="box tip bigtxt" id="l4a"><button type="button" class="say noread" data-for="#l4a" aria-label="Escuchar">🔊</button> Los <b class="c-j">adjetivos calificativos</b> son palabras que dicen <b>cómo es</b> el sustantivo.</div>
+    <div class="bigphrase" style="justify-content:center"><span class="noread" style="font-size:2.2rem">🏠</span><div><span class="c-a">Una</span> <span class="c-s">casa</span> <span class="c-j">grande</span></div></div>
+    <p class="bigtxt" style="text-align:center">¿Cómo es la casa? <b class="c-j">grande</b></p>
+    <div class="lab"><div class="lab-title">Pruébalo · elige una palabra y cómo es</div><div id="adjX"></div></div>
+    <div class="lab"><div class="lab-title">Juega · los adjetivos</div><div data-practice="adj,comp" data-need="5"></div></div>
+  </div>
+
+  <!-- 5 -->
+  <div class="card lesson" data-sec="5" data-title="Todo junto">
+    <h2><span class="sec-num">5</span>Todo junto: artículo, sustantivo y adjetivo</h2>
+    <div class="box tip bigtxt" id="l5a"><button type="button" class="say noread" data-for="#l5a" aria-label="Escuchar">🔊</button> En tu guía se pinta así: el <b class="c-a">artículo en naranjo</b>, el <b class="c-s">sustantivo en azul</b> y el <b class="c-j">adjetivo en verde</b>.</div>
+    <div class="bigphrase" style="justify-content:center"><span class="noread" style="font-size:2.2rem">🐰</span><div><span class="c-a">El</span> <span class="c-s">conejo</span> <span class="c-j">suave</span> saltó.</div></div>
+    <div class="box gold" id="l5b"><button type="button" class="say noread" data-for="#l5b" aria-label="Escuchar">🔊</button> <h4>¡Tienen que ir juntos!</h4>El artículo y el adjetivo cambian igual que el sustantivo: si el sustantivo es femenino, ellos también; si son varios, ellos también.
+      <div class="fixrow"><span class="bad-x">✗ El perros negros</span> <span class="good-v">✓ Los perros negros</span></div>
+      <div class="fixrow"><span class="bad-x">✗ Unas flor blanca</span> <span class="good-v">✓ Una flor blanca</span></div></div>
+    <div class="lab"><div class="lab-title">Juega · pinta, corrige y arma frases</div><div data-practice="paint,fix,build" data-need="5"></div></div>
+    <div class="box green" style="margin-top:16px">¡Terminaste las lecciones! Ahora haz una <a href="#ensayo">prueba de ensayo</a>.</div>
+  </div>
+
+  <div class="pager"><button class="btn ghost" id="prevSec">← Anterior</button><button class="btn blue" id="nextSec">Siguiente →</button></div>
+</section>
+
+<!-- ================= PRUEBAS ================= -->
+<section id="v-ensayo" class="view hide"></section>
+
+<!-- ================= RESULTADOS ================= -->
+<section id="v-resultados" class="view hide"></section>
+
+</main>
+<script>
+"use strict";
+/* ============ utilidades ============ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const sample = (arr, n) => shuffle(arr).slice(0, n);
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const notaTxt = n => n.toFixed(1).replace(".", ",");
+
+/* ============ guardado local ============ */
+const STORE = "augusta-lenguaje-2b-v1";
+let DB = (() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } })();
+DB.done = DB.done || {}; DB.hits = DB.hits || {}; DB.history = DB.history || []; DB.stars = DB.stars || 0;
+function save() { try { localStorage.setItem(STORE, JSON.stringify(DB)); } catch (e) { } }
+
+/* ============ leer en voz alta ============ */
+let VOICE = null;
+function pickVoice() {
+  if (!("speechSynthesis" in window)) return;
+  const FUN = /grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley|bells|boing|bubbles|cellos|wobble|bad news|good news|jester|organ|superstar|trinoids|whisper|zarvox|albert|fred|junior|kathy|ralph/i;
+  const all = speechSynthesis.getVoices().filter(v => /^es/i.test(v.lang)), vs = all.filter(v => !FUN.test(v.name)).length ? all.filter(v => !FUN.test(v.name)) : all;
+  VOICE = vs.find(v => /es[-_]CL/i.test(v.lang)) || vs.find(v => /es[-_](MX|US|419)/i.test(v.lang)) || vs.find(v => /es[-_]ES/i.test(v.lang)) || vs[0] || null;
+}
+if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function plain(html) {
+  const d = document.createElement("div"); d.innerHTML = html;
+  $$(".noread", d).forEach(x => x.remove());
+  return d.textContent.replace(/_{2,}/g, " rayita ").replace(/\p{Extended_Pictographic}|️|‍/gu, "").replace(/\s+/g, " ").trim();
+}
+function say(text) {
+  if (!("speechSynthesis" in window) || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.lang = VOICE ? VOICE.lang : "es-CL"; if (VOICE) u.voice = VOICE; u.rate = 0.88; u.pitch = 1.05;
+  speechSynthesis.speak(u);
+}
+const sayBtn = (text) => `<button type="button" class="say noread" data-say="${esc(text)}" aria-label="Escuchar">🔊</button>`;
+document.addEventListener("click", e => {
+  const b = e.target.closest(".say"); if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  const t = b.dataset.say || plain((b.dataset.for ? $(b.dataset.for) : b.parentElement).innerHTML);
+  say(t);
+});
+
+/* ============ confeti ============ */
+function confetti() {
+  const c = document.createElement("canvas"); c.className = "confetti"; document.body.appendChild(c);
+  const x = c.getContext("2d"); c.width = innerWidth; c.height = innerHeight;
+  const cols = ["#8A5CD6", "#F08A24", "#2F7FD8", "#2E9E5B", "#E9B325", "#E8618C"];
+  const P = Array.from({ length: 150 }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.4, vx: -2 + Math.random() * 4, vy: 2 + Math.random() * 4, r: 4 + Math.random() * 6, c: pick(cols), a: Math.random() * 6 }));
+  let t = 0; (function f() { x.clearRect(0, 0, c.width, c.height); P.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.a += 0.1; x.save(); x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.fillRect(-p.r, -p.r / 2, 2 * p.r, p.r); x.restore(); }); if (++t < 200) requestAnimationFrame(f); else c.remove(); })();
+}
+
+/* ============ navegación ============ */
+const VIEWS = ["inicio", "aprender", "ensayo", "resultados"];
+function go(v, push = true) {
+  let sec = null;
+  if (v && v.startsWith("aprender-")) { sec = +v.split("-")[1]; v = "aprender"; }
+  if (!VIEWS.includes(v)) v = "inicio";
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  VIEWS.forEach(x => $("#v-" + x).classList.toggle("hide", x !== v));
+  $$("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.go === v));
+  if (v === "inicio") renderHome();
+  if (v === "aprender") showSec(sec || DB.cur || 1);
+  if (v === "ensayo") renderEnsayo();
+  if (v === "resultados") renderResults();
+  const h = "#" + (sec ? "aprender-" + sec : v);
+  if (push && location.hash !== h) history.pushState(null, "", h);
+  window.scrollTo(0, 0);
+}
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); go(g.dataset.go); return; }
+  const a = e.target.closest('a[href^="#"]'); if (a) { e.preventDefault(); go(a.getAttribute("href").slice(1)); }
+});
+window.addEventListener("popstate", () => go(location.hash.slice(1), false));
+function setHdr() { document.documentElement.style.setProperty("--hdr", $("header.top").offsetHeight + "px"); }
+window.addEventListener("resize", setHdr);
+
+/* ============ lecciones ============ */
+let SECS = [];
+function buildLessons() {
+  SECS = $$(".lesson").map(el => ({ n: +el.dataset.sec, t: el.dataset.title, el }));
+  $("#lessonNav").innerHTML = SECS.map(s => `<button data-sec="${s.n}">${s.n} · ${s.t}</button>`).join("");
+  $$("#lessonNav button").forEach(b => b.onclick = () => { showSec(+b.dataset.sec); history.pushState(null, "", "#aprender-" + b.dataset.sec); });
+  $("#prevSec").onclick = () => { showSec(DB.cur - 1); history.pushState(null, "", "#aprender-" + DB.cur); };
+  $("#nextSec").onclick = () => { if (DB.cur >= SECS.length) go("ensayo"); else { showSec(DB.cur + 1); history.pushState(null, "", "#aprender-" + DB.cur); } };
+}
+function showSec(n) {
+  n = Math.max(1, Math.min(SECS.length, n));
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  SECS.forEach(s => s.el.classList.toggle("hide", s.n !== n));
+  DB.cur = n; save();
+  $$("#lessonNav button").forEach(b => { const k = +b.dataset.sec; b.classList.toggle("on", k === n); b.classList.toggle("done", !!DB.done[k]); });
+  $("#prevSec").disabled = n === 1;
+  $("#nextSec").textContent = n === SECS.length ? "Ir a las pruebas →" : "Siguiente →";
+  window.scrollTo(0, 0);
+}
+function sectionDone(n) { if (DB.done[n]) return; DB.done[n] = true; save(); $$("#lessonNav button").forEach(b => { if (+b.dataset.sec === n) b.classList.add("done"); }); }
+
+/* ============ diccionario de palabras ============
+   sustantivo: [singular, plural, género m|f, emoji, categoría, [adjetivos que le quedan bien]] */
+const NOUNS = [
+  ["perro", "perros", "m", "🐶", "animal", ["grande", "pequeño", "negro", "blanco", "travieso", "rápido", "lindo"]],
+  ["gato", "gatos", "m", "🐱", "animal", ["negro", "blanco", "pequeño", "curioso", "travieso", "suave"]],
+  ["conejo", "conejos", "m", "🐰", "animal", ["blanco", "suave", "pequeño", "rápido", "lindo"]],
+  ["pájaro", "pájaros", "m", "🐦", "animal", ["pequeño", "amarillo", "alegre", "rápido"]],
+  ["pez", "peces", "m", "🐟", "animal", ["pequeño", "amarillo", "rápido", "grande"]],
+  ["vaca", "vacas", "f", "🐮", "animal", ["grande", "blanco", "negro", "tranquilo"]],
+  ["mariposa", "mariposas", "f", "🦋", "animal", ["pequeño", "lindo", "amarillo", "azul"]],
+  ["tortuga", "tortugas", "f", "🐢", "animal", ["pequeño", "lento", "verde", "tranquilo"]],
+  ["árbol", "árboles", "m", "🌳", "planta", ["alto", "grande", "verde", "pequeño"]],
+  ["flor", "flores", "f", "🌸", "planta", ["rojo", "blanco", "lindo", "pequeño", "amarillo"]],
+  ["lápiz", "lápices", "m", "✏️", "objeto", ["rojo", "azul", "nuevo", "pequeño"]],
+  ["libro", "libros", "m", "📕", "objeto", ["nuevo", "grande", "rojo", "entretenido"]],
+  ["pelota", "pelotas", "f", "⚽", "objeto", ["nuevo", "grande", "pequeño", "blanco"]],
+  ["reloj", "relojes", "m", "⏰", "objeto", ["nuevo", "rojo", "grande", "pequeño"]],
+  ["silla", "sillas", "f", "🪑", "objeto", ["nuevo", "pequeño", "grande", "rojo"]],
+  ["globo", "globos", "m", "🎈", "objeto", ["rojo", "grande", "azul", "amarillo"]],
+  ["auto", "autos", "m", "🚗", "objeto", ["rojo", "rápido", "nuevo", "azul"]],
+  ["casa", "casas", "f", "🏠", "lugar", ["grande", "pequeño", "lindo", "nuevo"]],
+  ["colegio", "colegios", "m", "🏫", "lugar", ["grande", "nuevo", "lindo"]],
+  ["montaña", "montañas", "f", "⛰️", "lugar", ["alto", "grande", "lindo"]],
+  ["playa", "playas", "f", "🏖️", "lugar", ["grande", "lindo", "tranquilo"]],
+  ["niño", "niños", "m", "👦", "persona", ["alegre", "alto", "curioso", "travieso"]],
+  ["niña", "niñas", "f", "👧", "persona", ["alegre", "alto", "curioso", "travieso"]],
+  ["cocinera", "cocineras", "f", "👩‍🍳", "persona", ["alegre", "simpático", "alto"]],
+  ["profesora", "profesoras", "f", "👩‍🏫", "persona", ["alegre", "simpático", "alto"]],
+  ["doctor", "doctores", "m", "👨‍⚕️", "persona", ["alegre", "simpático", "alto"]],
+  ["sol", "soles", "m", "☀️", null, ["brillante", "amarillo", "grande"]],
+  ["estrella", "estrellas", "f", "⭐", null, ["brillante", "pequeño", "amarillo"]],
+  ["luna", "lunas", "f", "🌙", null, ["brillante", "grande", "blanco"]]
+];
+/* adjetivo: [masc. singular, fem. singular, masc. plural, fem. plural] */
+const ADJ = {
+  grande: ["grande", "grande", "grandes", "grandes"], pequeño: ["pequeño", "pequeña", "pequeños", "pequeñas"],
+  negro: ["negro", "negra", "negros", "negras"], blanco: ["blanco", "blanca", "blancos", "blancas"],
+  rojo: ["rojo", "roja", "rojos", "rojas"], azul: ["azul", "azul", "azules", "azules"],
+  amarillo: ["amarillo", "amarilla", "amarillos", "amarillas"], verde: ["verde", "verde", "verdes", "verdes"],
+  travieso: ["travieso", "traviesa", "traviesos", "traviesas"], curioso: ["curioso", "curiosa", "curiosos", "curiosas"],
+  rápido: ["rápido", "rápida", "rápidos", "rápidas"], lento: ["lento", "lenta", "lentos", "lentas"],
+  lindo: ["lindo", "linda", "lindos", "lindas"], suave: ["suave", "suave", "suaves", "suaves"],
+  alegre: ["alegre", "alegre", "alegres", "alegres"], alto: ["alto", "alta", "altos", "altas"],
+  nuevo: ["nuevo", "nueva", "nuevos", "nuevas"], tranquilo: ["tranquilo", "tranquila", "tranquilos", "tranquilas"],
+  simpático: ["simpático", "simpática", "simpáticos", "simpáticas"], brillante: ["brillante", "brillante", "brillantes", "brillantes"],
+  entretenido: ["entretenido", "entretenida", "entretenidos", "entretenidas"]
+};
+const ART = { def: { ms: "el", fs: "la", mp: "los", fp: "las" }, ind: { ms: "un", fs: "una", mp: "unos", fp: "unas" } };
+const CAT = { persona: "una persona", animal: "un animal", planta: "una planta", objeto: "un objeto", lugar: "un lugar" };
+/* verbos para armar oraciones simples: [singular, plural] por categoría */
+const VERBS = { animal: [["salta", "saltan"], ["corre", "corren"], ["duerme", "duermen"], ["come", "comen"]], persona: [["juega", "juegan"], ["canta", "cantan"], ["lee", "leen"], ["ríe", "ríen"]], planta: [["crece", "crecen"]], objeto: [["está aquí", "están aquí"]], lugar: [["está lejos", "están lejos"]], null: [["brilla", "brillan"]] };
+
+/* palabras que NO son sustantivos */
+const NO_SUST = [["saltar", "es una acción (algo que hacemos)"], ["correr", "es una acción"], ["comer", "es una acción"], ["dormir", "es una acción"], ["cantar", "es una acción"], ["grande", "dice cómo es algo"], ["rojo", "dice cómo es algo"], ["feliz", "dice cómo es alguien"], ["rápido", "dice cómo es algo"], ["suave", "dice cómo es algo"]];
+
+/* sustantivos propios */
+const PROPIOS = [["Camila", "persona"], ["Andrés", "persona"], ["Augusta", "persona"], ["Tomás", "persona"], ["Sofía", "persona"], ["Chile", "lugar"], ["Santiago", "lugar"], ["Concón", "lugar"], ["Viña del Mar", "lugar"], ["Valparaíso", "lugar"], ["Tobby", "mascota"], ["Kitty", "mascota"], ["Rocky", "mascota"], ["Pelusa", "mascota"]];
+const COMUNES_EXTRA = ["ciudad", "país", "mamá", "papá", "abuela", "mascota", "leche", "gimnasio", "jardín", "ventana"];
+/* oraciones para la mayúscula: [bien escrita, mal escrita] */
+const MAYUS = [
+  ["Vivo en Concón.", "Vivo en concón."], ["Mi perro se llama Tobby.", "Mi perro se llama tobby."], ["Camila juega en el patio.", "camila juega en el patio."],
+  ["Chile es un país largo.", "chile es un país largo."], ["Mi gata se llama Kitty.", "Mi gata se llama kitty."], ["Andrés vive en Santiago.", "Andrés vive en santiago."],
+  ["Fuimos a la playa en Viña del Mar.", "Fuimos a la playa en viña del mar."], ["Mi hermana se llama Augusta.", "Mi hermana se llama augusta."]
+];
+
+/* oraciones de la guía para pintar: [palabra, rol] con rol a (artículo), s (sustantivo), j (adjetivo) o "" */
+const GUIDE_SENT = [
+  [["Un", "a"], ["colibrí", "s"], ["multicolor", "j"], ["canta", ""], ["en", ""], ["la", "a"], ["ventana.", "s"]],
+  [["Una", "a"], ["flor", "s"], ["blanca", "j"], ["creció", ""], ["en", ""], ["el", "a"], ["jardín.", "s"]],
+  [["Las", "a"], ["niñas", "s"], ["alegres", "j"], ["aprenden", ""], ["en", ""], ["la", "a"], ["sala.", "s"]],
+  [["Los", "a"], ["perros", "s"], ["bravos", "j"], ["ladran", ""], ["en", ""], ["la", "a"], ["reja.", "s"]],
+  [["Una", "a"], ["profesora", "s"], ["enseña", ""], ["lenguaje.", "s"]],
+  [["Hay", ""], ["unos", "a"], ["autos", "s"], ["rápidos", "j"], ["en", ""], ["la", "a"], ["carretera.", "s"]]
+];
+/* completar con adjetivos de la caja (guía): [antes, después, correcta, [distractores]] */
+const GUIDE_FILL = [
+  ["Un", "viento golpeó mi ventana.", "fuerte", ["esponjosa", "oscuras", "fría"]],
+  ["El sol", "iluminó la mañana.", "brillante", ["oscuras", "esponjosa", "fría"]],
+  ["No me gustan las calles", ".", "oscuras", ["brillante", "fuerte", "pequeño"]],
+  ["El agua", "de la piscina me quitó el calor.", "fría", ["brillante", "oscuras", "curioso"]],
+  ["Mi hermanito", "está aprendiendo a caminar.", "pequeño", ["oscuras", "esponjosa", "fría"]],
+  ["La", "cola del conejo me hacía cosquillas.", "esponjosa", ["oscuras", "fuerte", "curioso"]],
+  ["Era un niño", "y juguetón.", "travieso", ["oscuras", "fría", "esponjosa"]],
+  ["Tenía el pelo", "y muy largo.", "suave", ["oscuras", "fría", "brillante"]]
+];
+/* corregir (guía): [mal, bien] */
+const GUIDE_FIX = [
+  ["El perros negros corren rápido.", "Los perros negros corren rápido.", "Los perros negro corren rápido."],
+  ["Un niñas bonitas juegan en el parque.", "Unas niñas bonitas juegan en el parque.", "Unas niñas bonita juegan en el parque."],
+  ["Unas flor blanca creció en el jardín.", "Una flor blanca creció en el jardín.", "Una flor blancas creció en el jardín."]
+];
+
+/* ============ gramática ============ */
+const KEYS = ["ms", "fs", "mp", "fp"];
+const keyOf = (g, plural) => g + (plural ? "p" : "s");
+const nounW = (N, plural) => plural ? N[1] : N[0];
+const adjW = (a, k) => ADJ[a][KEYS.indexOf(k)];
+const GN_TXT = { ms: "masculino y singular", fs: "femenino y singular", mp: "masculino y plural", fp: "femenino y plural" };
+const GN_OPT = ["Masculino y singular", "Masculino y plural", "Femenino y singular", "Femenino y plural"];
+const GN_IDX = { ms: 0, mp: 1, fs: 2, fp: 3 };
+const emo = (N, plural) => `<span class="emo noread">${plural ? N[3] + N[3] : N[3]}</span>`;
+const ADJ4 = Object.keys(ADJ).filter(a => new Set(ADJ[a]).size === 4);
+const TOPIC_SEC = { sust: 1, comun: 2, mayus: 2, art: 3, gen: 3, adj: 4, comp: 4, paint: 5, fix: 5, build: 5 };
+
+function mcShuffled(topic, q, opts, exp, extra = {}) { const idx = shuffle(opts.map((_, i) => i)); return { t: "mc", topic, q, opts: idx.map(i => opts[i]), ans: idx.indexOf(0), exp, ...extra }; }
+function simpleSentence(N, plural, a, def = Math.random() < 0.6) {
+  const k = keyOf(N[2], plural), art = ART[def ? "def" : "ind"][k], vb = pick(VERBS[N[4] || "null"])[plural ? 1 : 0];
+  return { words: [[cap(art), "a"], [nounW(N, plural), "s"], [adjW(a, k), "j"], ...vb.split(" ").map((w, i, arr) => [i === arr.length - 1 ? w + "." : w, ""])], k, art, adj: adjW(a, k), vb };
+}
+
+const G = {
+  sust() {
+    if (Math.random() < 0.55) {
+      const N = pick(NOUNS), no = sample(NO_SUST, 3);
+      return mcShuffled("sust", "¿Cuál de estas palabras es un <b>sustantivo</b>?", [N[0], ...no.map(x => x[0])], `«${N[0]}» ${emo(N)} nombra ${N[4] ? CAT[N[4]] : "algo que vemos"}: es un sustantivo. ${no.map(x => `«${x[0]}» ${x[1]}.`).join(" ")}`);
+    }
+    const N = pick(NOUNS.filter(n => n[4])), keys = Object.keys(CAT);
+    return { t: "mc", topic: "sust", q: `El sustantivo <b>«${N[0]}»</b> ${emo(N)} nombra…`, opts: keys.map(k => cap(CAT[k])), ans: keys.indexOf(N[4]), exp: `«${N[0]}» nombra ${CAT[N[4]]}.`, tall: true };
+  },
+  comun() {
+    const comunes = [...NOUNS.map(n => n[0]), ...COMUNES_EXTRA];
+    if (Math.random() < 0.6) {
+      const nP = rnd(1, 3), items = shuffle([...sample(PROPIOS, nP).map(p => ({ w: p[0], lab: 1, why: `es el nombre de ${p[1] === "persona" ? "una persona" : p[1] === "lugar" ? "un lugar" : "una mascota"}` })), ...sample(comunes, 4 - nP).map(w => ({ w, lab: 0 }))]);
+      return { t: "cls", topic: "comun", q: "¿Es un sustantivo común o propio?", labels: ["Común", "Propio"], items: items.map(x => esc(x.w)), ans: items.map(x => x.lab), exp: items.map(x => x.lab ? `<b>${esc(x.w)}</b> → propio: ${x.why}, y empieza con mayúscula.` : `<b>${esc(x.w)}</b> → común: se escribe con minúscula.`).join("<br>") };
+    }
+    const p = pick(PROPIOS);
+    return mcShuffled("comun", "¿Cuál es un sustantivo <b>propio</b>?", [p[0], ...sample(comunes, 3)], `«${p[0]}» es el nombre de ${p[1] === "persona" ? "una persona" : p[1] === "lugar" ? "un lugar" : "una mascota"}: es propio y empieza con mayúscula.`);
+  },
+  mayus() {
+    const [good, bad] = pick(MAYUS), bad2 = bad.charAt(0).toLowerCase() + bad.slice(1);
+    const opts = [...new Set([good, bad, bad2])];
+    return mcShuffled("mayus", "¿Cuál oración está <b>bien escrita</b>?", opts.map(esc), `«${esc(good)}» está bien: los nombres propios empiezan con mayúscula, y la oración también.`, { tall: true });
+  },
+  art() {
+    const N = pick(NOUNS), plural = Math.random() < 0.5, k = keyOf(N[2], plural), def = Math.random() < 0.55, set = ART[def ? "def" : "ind"];
+    const opts = [set.ms, set.fs, set.mp, set.fp];
+    return { t: "mc", topic: "art", q: `¿Qué artículo va? <span class="blank noread">___</span> <b>${nounW(N, plural)}</b> ${emo(N, plural)}`, say: `¿Qué artículo va antes de ${nounW(N, plural)}?`, opts, ans: opts.indexOf(set[k]), exp: `«${nounW(N, plural)}» es ${GN_TXT[k]}${plural ? " (más de uno)" : " (uno)"}: <b>${set[k]} ${nounW(N, plural)}</b>.` };
+  },
+  gen() {
+    const N = pick(NOUNS), plural = Math.random() < 0.5, k = keyOf(N[2], plural);
+    if (Math.random() < 0.7) return { t: "mc", topic: "gen", q: `Clasifica el sustantivo <b>«${nounW(N, plural)}»</b> ${emo(N, plural)}`, say: `Clasifica el sustantivo ${nounW(N, plural)}. ¿Es masculino o femenino, singular o plural?`, opts: GN_OPT, ans: GN_IDX[k], exp: `Se dice <b>${ART.def[k]} ${nounW(N, plural)}</b>: es ${GN_TXT[k]}.`, tall: true };
+    const wrong = [...new Set([N[0] + "s", N[0] + "es", N[0] + "ses", ART.def[keyOf(N[2], false)] + " " + N[0]])].filter(w => w !== N[1]).slice(0, 3);
+    return mcShuffled("gen", `¿Cuál es el <b>plural</b> de «${N[0]}»? ${emo(N)}`, [N[1], ...wrong], `Cuando son más de uno: <b>${ART.def[keyOf(N[2], true)]} ${N[1]}</b>.`);
+  },
+  adj() {
+    const N = pick(NOUNS), plural = Math.random() < 0.5, a = pick(N[5]), S = simpleSentence(N, plural, a);
+    if (Math.random() < 0.55) return { t: "tap", topic: "adj", pre: `<div class="sent">${S.words.map((w, i) => `<span class="pt word" data-part="${i}">${esc(w[0])}</span>`).join(" ")}</div>`, q: "Toca el <b>adjetivo</b>: la palabra que dice cómo es.", ans: "2", exp: `¿Cómo es ${S.words[0][0].toLowerCase()} ${S.words[1][0]}? <b>${S.adj}</b>. Esa palabra es el adjetivo.` };
+    return mcShuffled("adj", `«${esc(S.words.map(w => w[0]).join(" "))}» ${emo(N, plural)} ¿Cómo ${plural ? "son" : "es"} ${S.words[0][0].toLowerCase()} ${S.words[1][0]}?`, [S.adj, S.vb.split(" ")[0], S.words[0][0].toLowerCase(), S.words[1][0]], `${cap(S.words[0][0].toLowerCase())} ${S.words[1][0]} ${plural ? "son" : "es"} <b>${S.adj}</b>: el adjetivo dice cómo ${plural ? "son" : "es"}.`);
+  },
+  comp() {
+    if (Math.random() < 0.4) {
+      const [pre, post, ok, dis] = pick(GUIDE_FILL);
+      return mcShuffled("comp", `Completa con el adjetivo que corresponde: ${esc(pre)} <span class="blank noread">___</span> ${esc(post)}`, [ok, ...dis], `${esc(pre)} <b>${ok}</b> ${esc(post)}`, { say: `Completa con el adjetivo que corresponde: ${pre} rayita ${post}` });
+    }
+    const Ns = NOUNS.filter(n => n[5].some(a => ADJ4.includes(a))), N = pick(Ns), plural = Math.random() < 0.5, a = pick(N[5].filter(x => ADJ4.includes(x))), S = simpleSentence(N, plural, a);
+    const txt = `${S.words[0][0]} ${S.words[1][0]} <span class="blank noread">___</span> ${esc(S.vb)}.`;
+    return { t: "mc", topic: "comp", q: `¿Qué palabra completa bien? ${txt} ${emo(N, plural)}`, say: `¿Qué palabra completa bien? ${S.words[0][0]} ${S.words[1][0]} rayita ${S.vb}.`, opts: ADJ[a].slice(), ans: ADJ[a].indexOf(S.adj), exp: `«${nounW(N, plural)}» es ${GN_TXT[S.k]}, así que el adjetivo también: <b>${S.words[0][0]} ${S.words[1][0]} ${S.adj}</b>.` };
+  },
+  paint() {
+    let words;
+    if (Math.random() < 0.5) words = pick(GUIDE_SENT);
+    else { const N = pick(NOUNS), plural = Math.random() < 0.5; words = simpleSentence(N, plural, pick(N[5])).words; }
+    const ROLE = { a: "artículo", s: "sustantivo", j: "adjetivo" };
+    return { t: "paint", topic: "paint", q: "Pinta cada palabra: <b class='c-a'>artículo en naranjo</b>, <b class='c-s'>sustantivo en azul</b> y <b class='c-j'>adjetivo en verde</b>. Las demás no se pintan.", say: "Pinta cada palabra. El artículo en naranjo, el sustantivo en azul y el adjetivo en verde. Las demás palabras no se pintan.", words: words.map(w => w[0]), ans: words.map(w => w[1] || null), exp: words.filter(w => w[1]).map(w => `<b class="c-${w[1]}">${esc(w[0].replace(".", ""))}</b> es ${ROLE[w[1]]}`).join(" · ") + "." };
+  },
+  fix() {
+    if (Math.random() < 0.35) {
+      const [bad, good, alt] = pick(GUIDE_FIX);
+      return mcShuffled("fix", `Esta oración está mal: «${esc(bad)}» ¿Cómo se escribe bien?`, [good, bad, alt].map(esc), `Bien escrita: «<b>${esc(good)}</b>». El artículo, el sustantivo y el adjetivo tienen que ir juntos en género y número.`, { tall: true });
+    }
+    const N = pick(NOUNS.filter(n => n[5].some(a => ADJ4.includes(a)))), plural = Math.random() < 0.5, a = pick(N[5].filter(x => ADJ4.includes(x))), S = simpleSentence(N, plural, a, true);
+    const k = S.k, g = k[0], n = k[1], otherN = g + (n === "s" ? "p" : "s"), otherG = (g === "m" ? "f" : "m") + n;
+    const mk = (art, adj) => `${cap(art)} ${nounW(N, plural)} ${adj} ${S.vb}.`;
+    const good = mk(ART.def[k], adjW(a, k));
+    const bads = [...new Set([mk(ART.def[otherN], adjW(a, k)), mk(ART.def[k], adjW(a, otherG)), mk(ART.def[k], adjW(a, otherN)), mk(ART.def[otherG], adjW(a, k))])].filter(x => x !== good).slice(0, 3);
+    return mcShuffled("fix", "¿Cuál oración está <b>bien escrita</b>?", [good, ...bads].map(esc), `«<b>${esc(good)}</b>»: «${nounW(N, plural)}» es ${GN_TXT[k]}, y el artículo y el adjetivo también.`, { tall: true });
+  },
+  build() {
+    const Ns = sample(NOUNS.filter(n => n[5].some(a => ADJ4.includes(a))), 3).map(N => [N, Math.random() < 0.5]);
+    const def = Math.random() < 0.6, set = ART[def ? "def" : "ind"];
+    const adjs = [...new Set(Ns.map(([N, p]) => { const a = pick(N[5].filter(x => ADJ4.includes(x))); return adjW(a, keyOf(N[2], p)) + "|" + a; }))];
+    const extra = ADJ4.filter(a => !adjs.some(x => x.endsWith("|" + a))).slice(0, 1).map(a => adjW(a, pick(KEYS)) + "|" + a);
+    return { t: "build", topic: "build", q: "Arma una frase: elige <b class='c-a'>un artículo</b>, <b class='c-s'>un sustantivo</b> y <b class='c-j'>un adjetivo</b> que vayan bien juntos.", say: "Arma una frase. Elige un artículo, un sustantivo y un adjetivo que vayan bien juntos.",
+      arts: KEYS.map(k => ({ w: set[k], k })), nouns: Ns.map(([N, p]) => ({ w: nounW(N, p), k: keyOf(N[2], p), ok: N[5], e: N[3] })), adjs: shuffle([...adjs, ...extra]).map(x => { const [w, a] = x.split("|"); return { w, a, ks: KEYS.filter(k => adjW(a, k) === w) }; }), exp: "" };
+  }
+};
+function genQ(topic) { const q = G[topic](); q.topic = topic; q.sec = TOPIC_SEC[topic]; return q; }
+
+/* ============ dibujar y corregir una pregunta ============ */
+const LET = "ABCDEF";
+const ROLE_TXT = { a: "Artículo", s: "Sustantivo", j: "Adjetivo" };
+function buildOk(q, v) { if (!v || v.a == null || v.s == null || v.j == null) return false; const A = q.arts[v.a], S = q.nouns[v.s], J = q.adjs[v.j]; return A.k === S.k && J.ks.includes(S.k) && S.ok.includes(J.a); }
+function gradeQ(q, v) {
+  if (v == null) return 0;
+  if (q.t === "mc" || q.t === "tap") return v === q.ans ? 2 : 0;
+  if (q.t === "cls") { if (!Array.isArray(v) || v.some(x => x == null)) return 0; const bad = v.filter((x, i) => x !== q.ans[i]).length; return bad === 0 ? 2 : bad === 1 ? 1 : 0; }
+  if (q.t === "paint") { if (!Array.isArray(v)) return 0; const bad = q.ans.filter((r, i) => (v[i] || null) !== r).length; return bad === 0 ? 2 : bad === 1 ? 1 : 0; }
+  if (q.t === "build") return buildOk(q, v) ? 2 : 0;
+  return 0;
+}
+function isAnswered(q, v) {
+  if (v == null) return false;
+  if (q.t === "cls") return Array.isArray(v) && v.every(x => x != null);
+  if (q.t === "paint") return Array.isArray(v) && v.some(x => x);
+  if (q.t === "build") return v.a != null && v.s != null && v.j != null;
+  return true;
+}
+function buildExp(q, v) {
+  if (buildOk(q, v)) { const A = q.arts[v.a], S = q.nouns[v.s], J = q.adjs[v.j]; return `<b>${cap(A.w)} ${S.w} ${J.w}</b> ${S.e}: los tres van en ${GN_TXT[S.k]}. ¡Muy bien armada!`; }
+  const S = v && v.s != null ? q.nouns[v.s] : q.nouns[0], A = q.arts.find(a => a.k === S.k), J = q.adjs.find(j => j.ks.includes(S.k) && S.ok.includes(j.a));
+  let why = "";
+  if (v && v.a != null && q.arts[v.a].k !== S.k) why += `«${q.arts[v.a].w}» no va con «${S.w}». `;
+  if (v && v.j != null && !q.adjs[v.j].ks.includes(S.k)) why += `«${q.adjs[v.j].w}» no va con «${S.w}». `;
+  else if (v && v.j != null && !S.ok.includes(q.adjs[v.j].a)) why += `«${q.adjs[v.j].w}» no le queda bien a «${S.w}». `;
+  return why + (A && J ? `Una frase que funciona: <b>${cap(A.w)} ${S.w} ${J.w}</b> ${S.e}.` : "");
+}
+
+/* cfg: { value, instant, locked, noReview, onChange(v), onDone(pts) } */
+function renderQ(el, q, cfg) {
+  let v = cfg.value == null ? (q.t === "cls" ? q.items.map(() => null) : q.t === "paint" ? q.words.map(() => null) : q.t === "build" ? { a: null, s: null, j: null } : null) : JSON.parse(JSON.stringify(cfg.value));
+  let locked = !!cfg.locked, pen = "a";
+  const head = `<div class="q-text big-q" style="margin-bottom:10px">${sayBtn(q.say || plain(q.q + (q.opts && q.t === "mc" ? ". Las alternativas son: " + q.opts.map(plain).join(", ") : "")))} ${q.q}</div>` + (q.pre ? `<div class="pre">${q.pre}</div>` : "");
+  const fbx = `<div class="fbx"></div>`;
+  const commit = () => { cfg.onChange && cfg.onChange(v); };
+  const finish = () => { locked = true; reveal(); cfg.onDone && cfg.onDone(gradeQ(q, v)); };
+  const addCheck = (sel, ready) => { $$("[data-check]", el).forEach(b => b.remove()); if (cfg.instant && !locked && ready) { $(sel, el).insertAdjacentHTML("beforeend", `<button type="button" class="btn blue" data-check="1" style="margin-top:12px">¡Listo! Revisar</button>`); $("[data-check]", el).onclick = finish; } };
+
+  function reveal() {
+    const pts = gradeQ(q, v), cls = pts === 2 ? "ok" : pts ? "part" : "bad";
+    if (q.t === "mc") $$(".opt", el).forEach(b => { const k = +b.dataset.k; b.classList.remove("sel"); if (k === q.ans) b.classList.add("ok"); else if (k === v) b.classList.add("bad"); });
+    if (q.t === "tap") $$("[data-part]", el).forEach(p => { p.classList.remove("hl"); if (p.dataset.part === q.ans) p.classList.add("ok"); else if (p.dataset.part === v) p.classList.add("bad"); });
+    if (q.t === "cls") $$(".crow", el).forEach((row, i) => row.classList.add(v[i] === q.ans[i] ? "ok" : "bad"));
+    if (q.t === "paint") $$(".pw", el).forEach((w, i) => { w.classList.add((v[i] || null) === q.ans[i] ? "right" : "wrong"); if (q.ans[i]) w.setAttribute("data-should", ROLE_TXT[q.ans[i]]); });
+    $$("[data-check]", el).forEach(b => b.remove());
+    const exp = q.t === "build" ? buildExp(q, v) : q.exp;
+    const tag = pts === 2 ? "⭐ ¡Muy bien!" : pts ? "¡Casi!" : isAnswered(q, v) ? "¡Uy! Todavía no." : "No respondiste.";
+    $(".fbx", el).innerHTML = `<div class="fb ${cls}"><span class="score-chip ${cls}">${pts} / 2</span> <b>${tag}</b> ${exp}${pts < 2 && q.sec && !cfg.noReview ? ` <a href="#aprender-${q.sec}">Repasar →</a>` : ""}</div>`;
+  }
+
+  if (q.t === "mc") {
+    el.innerHTML = head + `<div class="opts ${q.tall ? "tall" : ""}">${q.opts.map((o, k) => `<button type="button" class="opt" data-k="${k}"><span class="l">${LET[k]}</span><span>${o}</span></button>`).join("")}</div>` + fbx;
+    $$(".opt", el).forEach(b => b.onclick = () => { if (locked) return; v = +b.dataset.k; $$(".opt", el).forEach(x => x.classList.toggle("sel", x === b)); commit(); if (cfg.instant) finish(); });
+    if (v != null) $(`.opt[data-k="${v}"]`, el)?.classList.add("sel");
+  }
+  if (q.t === "tap") {
+    el.innerHTML = head + fbx;
+    $$("[data-part]", el).forEach(p => p.onclick = () => { if (locked) return; v = p.dataset.part; $$("[data-part]", el).forEach(x => x.classList.toggle("hl", x === p)); commit(); if (cfg.instant) finish(); });
+    if (v != null) $(`[data-part="${v}"]`, el)?.classList.add("hl");
+  }
+  if (q.t === "cls") {
+    el.innerHTML = head + `<div class="clsq">${q.items.map((t, i) => `<div class="crow"><span class="tx">${t}</span><span class="seg" data-row="${i}">${q.labels.map((l, k) => `<button type="button" data-k="${k}" class="${v[i] === k ? "sel" : ""}">${l}</button>`).join("")}</span></div>`).join("")}</div>` + fbx;
+    const maybe = () => addCheck(".clsq", v.every(x => x != null));
+    $$(".seg", el).forEach(s => $$("button", s).forEach(b => b.onclick = () => { if (locked) return; const i = +s.dataset.row; v[i] = +b.dataset.k; $$("button", s).forEach(x => x.classList.toggle("sel", x === b)); commit(); maybe(); }));
+    maybe();
+  }
+  if (q.t === "paint") {
+    el.innerHTML = head + `<div class="paintq"><div class="pens">${["a", "s", "j"].map(r => `<button type="button" class="pen p-${r} ${r === pen ? "sel" : ""}" data-pen="${r}">${ROLE_TXT[r]}</button>`).join("")}<button type="button" class="pen p-x" data-pen="x">Borrar</button></div><div class="sent">${q.words.map((w, i) => `<button type="button" class="pw ${v[i] ? "r-" + v[i] : ""}" data-i="${i}">${esc(w)}</button>`).join(" ")}</div></div>` + fbx;
+    $$(".pen", el).forEach(b => b.onclick = () => { if (locked) return; pen = b.dataset.pen; $$(".pen", el).forEach(x => x.classList.toggle("sel", x === b)); });
+    $$(".pw", el).forEach(b => b.onclick = () => { if (locked) return; const i = +b.dataset.i; v[i] = pen === "x" || v[i] === pen ? null : pen; b.className = "pw" + (v[i] ? " r-" + v[i] : ""); commit(); addCheck(".paintq", v.some(x => x)); });
+    addCheck(".paintq", v.some(x => x));
+  }
+  if (q.t === "build") {
+    const row = (key, list, lab, cls) => `<div class="brow2"><div class="blab ${cls}">${lab}</div><div class="chips">${list.map((x, i) => `<button type="button" class="chip ${cls} ${v[key] === i ? "on" : ""}" data-key="${key}" data-i="${i}">${esc(x.w)}${x.e ? ` <span class="noread">${x.e}</span>` : ""}</button>`).join("")}</div></div>`;
+    el.innerHTML = head + `<div class="buildq">${row("a", q.arts, "Artículo", "c-a")}${row("s", q.nouns, "Sustantivo", "c-s")}${row("j", q.adjs, "Adjetivo", "c-j")}<div class="phrase" id="phr"></div></div>` + fbx;
+    const show = () => { const p = [v.a != null ? cap(q.arts[v.a].w) : "___", v.s != null ? q.nouns[v.s].w : "___", v.j != null ? q.adjs[v.j].w : "___"]; $(".phrase", el).innerHTML = `<span class="c-a">${esc(p[0])}</span> <span class="c-s">${esc(p[1])}</span> <span class="c-j">${esc(p[2])}</span>`; };
+    $$(".chip", el).forEach(b => b.onclick = () => { if (locked) return; const key = b.dataset.key; v[key] = +b.dataset.i; $$(`.chip[data-key="${key}"]`, el).forEach(x => x.classList.toggle("on", x === b)); show(); commit(); addCheck(".buildq", isAnswered(q, v)); });
+    show(); addCheck(".buildq", isAnswered(q, v));
+  }
+  if (locked) reveal();
+  return { reveal: () => { locked = true; reveal(); }, value: () => v };
+}
+
+/* ============ práctica infinita dentro de cada lección ============ */
+function practiceLoop(el, topics, sec, need) {
+  const counter = () => DB.done[sec] ? `<b>✓ ¡Lección lista!</b> Puedes seguir jugando. <span class="stars">⭐ ${DB.stars}</span>` : `Aciertos: <b>${DB.hits[sec] || 0}</b> de ${need} para completar la lección. <span class="stars">⭐ ${DB.stars}</span>`;
+  const draw = () => {
+    const q = genQ(pick(topics));
+    el.innerHTML = `<div class="counter">${counter()}</div><div class="qbox"></div>`;
+    renderQ($(".qbox", el), q, { instant: true, noReview: true, onDone: pts => {
+      if (pts === 2) { DB.hits[sec] = (DB.hits[sec] || 0) + 1; DB.stars++; save(); if (DB.hits[sec] >= need && !DB.done[sec]) { sectionDone(sec); confetti(); } }
+      $(".counter", el).innerHTML = counter();
+      $(".fbx", el).insertAdjacentHTML("beforeend", `<div class="q-actions"><button type="button" class="btn blue" data-next="1">Otra →</button></div>`);
+      $("[data-next]", el).onclick = draw;
+    } });
+  };
+  draw();
+}
+
+/* ============ pruebas de ensayo ============ */
+const PLAN = [["sust", 1], ["comun", 1], ["mayus", 1], ["art", 2], ["gen", 2], ["adj", 1], ["comp", 2], ["paint", 1], ["fix", 1]];
+const FOCOS = [["Sustantivos comunes y propios", ["sust", "comun", "mayus"], 1], ["Artículos, género y número", ["art", "gen"], 3], ["Adjetivos calificativos", ["adj", "comp"], 4], ["Todo junto", ["paint", "fix"], 5]];
+const nota = (p, max) => { const c = 0.6 * max; return Math.round((p < c ? 1 + 3 * p / c : 4 + 3 * (p - c) / (max - c)) * 10 + 1e-9) / 10; };
+const sig = q => q.q + "|" + (q.pre || "") + "|" + JSON.stringify(q.words || q.items || q.opts || "");
+function makeEnsayo(mode) {
+  const items = [], seen = new Set();
+  PLAN.forEach(([t, n]) => { for (let i = 0; i < n; i++) { let q, k = 0; do { q = genQ(t); } while (seen.has(sig(q)) && ++k < 25); seen.add(sig(q)); items.push(q); } });
+  return { mode, items, ans: {}, locked: {}, done: false, start: Date.now() };
+}
+function scoreEns(E) {
+  let pts = 0; const foc = FOCOS.map(() => ({ p: 0, m: 0 }));
+  E.items.forEach((q, i) => { const p = gradeQ(q, E.ans[i]); pts += p; FOCOS.forEach(([, ts], f) => { if (ts.includes(q.topic)) { foc[f].p += p; foc[f].m += 2; } }); });
+  const max = E.items.length * 2; return { pts, max, nota: nota(pts, max), foc };
+}
+function renderEnsayo() {
+  const root = $("#v-ensayo"), E = DB.ens;
+  if (!E) {
+    const last = DB.history.slice(-1)[0];
+    root.innerHTML = `<div class="card hero"><h1>${sayBtn("Pruebas de ensayo. Cada prueba tiene doce preguntas nuevas. Puedes elegir practicar, y te digo al tiro si está bien, o hacer la prueba, y ves tu nota al final.")} Pruebas de ensayo</h1>
+      <p>Cada prueba tiene <b>12 preguntas nuevas</b>. Puedes elegir:</p>
+      <div class="paths" style="grid-template-columns:1fr 1fr">
+        <div class="path"><div class="step">Practicar</div><h3>✏️ Te ayudo</h3><p>Después de cada pregunta te digo si está bien.</p><button class="btn blue" data-new="guia">Empezar a practicar</button></div>
+        <div class="path"><div class="step">Prueba</div><h3>📝 Como en el colegio</h3><p>Respondes todo y al final ves tu nota.</p><button class="btn" data-new="sim">Empezar la prueba</button></div>
+      </div>${last ? `<p class="small muted" style="margin:14px 0 0">Última prueba: ${last.pts} de ${last.max} puntos · nota ${notaTxt(last.nota)}. <a href="#resultados">Ver mis resultados</a></p>` : ""}</div>`;
+    $$("[data-new]", root).forEach(b => b.onclick = () => { DB.ens = makeEnsayo(b.dataset.new); save(); renderEnsayo(); window.scrollTo(0, 0); });
+    return;
+  }
+  const guided = E.mode === "guia", total = E.items.length;
+  let h = `<div class="testbar"><b>${guided ? "Practicando" : "Prueba"}</b><div class="progress"><i id="pbar"></i></div><span class="small" id="pcount"></span>${E.done ? "" : `<button type="button" class="btn small blue" data-fin="1">${guided ? "Ver mi nota" : "Entregar"}</button>`}</div>`;
+  if (E.done) h += resultCard(E);
+  h += E.items.map((q, i) => `<div class="card q" id="eq-${i}"><div class="q-head"><div class="q-num">${i + 1}</div><div style="flex:1"></div><div class="q-pts">2 pts</div></div><div class="qbody"></div></div>`).join("");
+  h += `<div class="row" style="justify-content:space-between;margin-top:10px">${E.done ? `<button class="btn blue" data-close="1">Hacer otra prueba</button>` : `<button type="button" class="btn blue" data-fin="1">${guided ? "Ver mi nota" : "Entregar la prueba"}</button>`}<button type="button" class="btn ghost small" data-quit="1">${E.done ? "Volver" : "Dejar esta prueba"}</button></div>`;
+  root.innerHTML = h;
+  E.items.forEach((q, i) => renderQ($(`#eq-${i} .qbody`), q, { value: E.ans[i], instant: guided && !E.done, locked: E.done || (guided && E.locked[i]),
+    onChange: v => { if (E.done) return; E.ans[i] = v; save(); progress(); },
+    onDone: () => { E.locked[i] = true; save(); progress(); } }));
+  $$("[data-fin]", root).forEach(b => b.onclick = finishEns);
+  $$("[data-close]", root).forEach(b => b.onclick = () => { DB.ens = null; save(); renderEnsayo(); window.scrollTo(0, 0); });
+  $$("[data-quit]", root).forEach(b => b.onclick = () => { if (E.done || confirm("¿Dejar esta prueba? Se borran las respuestas.")) { DB.ens = null; save(); renderEnsayo(); window.scrollTo(0, 0); } });
+  function progress() { const n = E.items.filter((q, i) => isAnswered(q, E.ans[i])).length, pb = $("#pbar"); if (pb) { pb.style.width = (100 * n / total) + "%"; $("#pcount").textContent = `${n} de ${total}`; } }
+  progress();
+}
+function finishEns() {
+  const E = DB.ens, left = E.items.filter((q, i) => !isAnswered(q, E.ans[i])).length;
+  if (left && !confirm(`Te ${left === 1 ? "falta 1 pregunta" : `faltan ${left} preguntas`}. ¿${E.mode === "guia" ? "Ver la nota" : "Entregar"} igual?`)) return;
+  E.done = true; E.end = Date.now();
+  const sc = scoreEns(E);
+  DB.history.push({ mode: E.mode, date: new Date().toISOString(), pts: sc.pts, max: sc.max, nota: sc.nota, foc: sc.foc.map(f => [f.p, f.m]) });
+  save(); renderEnsayo(); window.scrollTo(0, 0);
+  if (sc.nota >= 6) confetti();
+}
+function focoRows(foc) {
+  return `<div class="focos">${foc.map((f, i) => { if (!f.m) return ""; const pct = f.p / f.m, col = pct >= 0.8 ? "#2E9E5B" : pct >= 0.5 ? "#E9B325" : "#D64545"; return `<div class="foco"><span>${FOCOS[i][0]} ${pct < 0.8 ? `· <a href="#aprender-${FOCOS[i][2]}">repasar</a>` : ""}</span><div class="meter"><i style="width:${Math.max(4, pct * 100)}%;background:${col}"></i></div><b>${f.p}/${f.m}</b></div>`; }).join("")}</div>`;
+}
+function resultCard(E) {
+  const sc = scoreEns(E), n = sc.nota;
+  const msg = n >= 6 ? "¡Excelente, Augusta! 🌟" : n >= 5 ? "¡Muy bien! Mira abajo lo que te faltó." : n >= 4 ? "¡Bien! Repasa lo que está en rojo." : "Vamos a repasar un poco más y lo intentas otra vez. ¡Tú puedes!";
+  const stars = "⭐".repeat(Math.max(1, Math.round(sc.pts / sc.max * 5)));
+  return `<div class="card"><div class="result-top"><div><div class="small muted">Nota</div><div class="nota ${n >= 4 ? "ok" : "bad"}">${notaTxt(n)}</div></div>
+    <div style="flex:1;min-width:220px"><div style="font-size:1.6rem">${stars}</div><div><b>${sc.pts} de ${sc.max} puntos</b></div><p class="small" style="margin:4px 0 0">${msg}</p></div></div>
+    <h3 style="margin-top:18px">En qué fijarse</h3>${focoRows(sc.foc)}</div>`;
+}
+function fmtDate(iso) { const d = new Date(iso), p = x => String(x).padStart(2, "0"); return `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function renderResults() {
+  const root = $("#v-resultados"), H = DB.history;
+  if (!H.length) { root.innerHTML = `<div class="card"><h2>Mis resultados</h2><p>Todavía no hay resultados. Cuando termines una prueba, tu nota queda aquí.</p><p>Estrellas ganadas practicando: <b>⭐ ${DB.stars}</b></p><button class="btn blue" data-go="ensayo">Ir a las pruebas</button></div>`; return; }
+  const last = H.slice(-1)[0];
+  root.innerHTML = `<div class="card"><h2>Mis resultados</h2><p>Estrellas ganadas practicando: <b>⭐ ${DB.stars}</b></p><div class="tablewrap"><table class="t hist"><tr><th>Fecha</th><th>Modo</th><th>Puntos</th><th>Nota</th></tr>${H.slice().reverse().map(x => `<tr><td>${fmtDate(x.date)}</td><td>${x.mode === "sim" ? "Prueba" : "Práctica"}</td><td>${x.pts} / ${x.max}</td><td><b style="color:${x.nota >= 4 ? "var(--green)" : "var(--red)"}">${notaTxt(x.nota)}</b></td></tr>`).join("")}</table></div></div>
+    <div class="card"><h3>Última prueba: nota ${notaTxt(last.nota)}</h3>${focoRows(last.foc.map(([p, m]) => ({ p, m })))}</div>`;
+}
+
+/* ============ piezas de las lecciones ============ */
+function buildArtExplorer() {
+  const el = $("#artX"); let ni = 1, plural = false;
+  const draw = () => {
+    const N = NOUNS[ni], k = keyOf(N[2], plural);
+    el.innerHTML = `<div class="chips">${NOUNS.slice(0, 12).map((n, i) => `<button type="button" class="chip ${i === ni ? "on" : ""}" data-i="${i}"><span class="noread">${n[3]}</span> ${n[0]}</button>`).join("")}</div>
+      <div class="seg" style="margin:10px 0"><button type="button" data-p="0" class="${plural ? "" : "sel"}">Uno (singular)</button><button type="button" data-p="1" class="${plural ? "sel" : ""}">Más de uno (plural)</button></div>
+      <div class="bigphrase"><span class="noread" style="font-size:2.2rem">${plural ? N[3] + N[3] + N[3] : N[3]}</span><div><span class="c-a">${ART.def[k]}</span> <span class="c-s">${nounW(N, plural)}</span> ${sayBtn(ART.def[k] + " " + nounW(N, plural) + ". " + ART.ind[k] + " " + nounW(N, plural))}<br><span class="c-a">${ART.ind[k]}</span> <span class="c-s">${nounW(N, plural)}</span></div></div>
+      <p class="small">«${nounW(N, plural)}» es <b>${GN_TXT[k]}</b>.</p>`;
+    $$(".chip", el).forEach(b => b.onclick = () => { ni = +b.dataset.i; draw(); });
+    $$("[data-p]", el).forEach(b => b.onclick = () => { plural = b.dataset.p === "1"; draw(); });
+  };
+  draw();
+}
+function buildAdjExplorer() {
+  const el = $("#adjX"); let ni = 1, ai = 0;
+  const draw = () => {
+    const N = NOUNS[ni], adjs = N[5], a = adjs[Math.min(ai, adjs.length - 1)], k = keyOf(N[2], false);
+    el.innerHTML = `<div class="chips">${NOUNS.slice(0, 12).map((n, i) => `<button type="button" class="chip ${i === ni ? "on" : ""}" data-i="${i}"><span class="noread">${n[3]}</span> ${n[0]}</button>`).join("")}</div>
+      <p class="small" style="margin:10px 0 4px">¿Cómo es? Elige un adjetivo:</p>
+      <div class="chips">${adjs.map((x, i) => `<button type="button" class="chip c-j ${x === a ? "on" : ""}" data-a="${i}">${adjW(x, k)}</button>`).join("")}</div>
+      <div class="bigphrase"><span class="noread" style="font-size:2.2rem">${N[3]}</span><div><span class="c-a">${cap(ART.def[k])}</span> <span class="c-s">${N[0]}</span> <span class="c-j">${adjW(a, k)}</span> ${sayBtn(`${ART.def[k]} ${N[0]} ${adjW(a, k)}. ¿Cómo es ${ART.def[k]} ${N[0]}? ${adjW(a, k)}.`)}</div></div>
+      <p class="small">¿Cómo es ${ART.def[k]} ${N[0]}? <b class="c-j">${adjW(a, k)}</b>.</p>`;
+    $$(".chip[data-i]", el).forEach(b => b.onclick = () => { ni = +b.dataset.i; ai = 0; draw(); });
+    $$(".chip[data-a]", el).forEach(b => b.onclick = () => { ai = +b.dataset.a; draw(); });
+  };
+  draw();
+}
+function renderHome() {
+  const done = Object.keys(DB.done).filter(k => DB.done[k]).length, last = DB.history.slice(-1)[0], E = DB.ens;
+  $("#st-aprender").innerHTML = done ? `<span style="color:var(--green)">${done} de 5 lecciones listas · ⭐ ${DB.stars}</span>` : `<span class="muted">Sin empezar</span>`;
+  $("#st-ensayo").innerHTML = E && !E.done ? `<span style="color:var(--orange-ink)">Tienes una prueba sin terminar</span>` : last ? `<span style="color:${last.nota >= 4 ? "var(--green)" : "var(--red)"}">Última: nota ${notaTxt(last.nota)}</span>` : `<span class="muted">Sin empezar</span>`;
+}
+
+/* ============ arranque ============ */
+function init() {
+  setHdr();
+  buildLessons(); buildArtExplorer(); buildAdjExplorer();
+  $$("[data-practice]").forEach(el => practiceLoop(el, el.dataset.practice.split(","), +el.closest(".lesson").dataset.sec, +el.dataset.need));
+  go(location.hash.slice(1) || "inicio", false);
+}
+init();
+</script>
+</body></html>
