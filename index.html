@@ -24,6 +24,7 @@ a.ramo:active{transform:scale(.98)}
 .ramo p{margin:0;color:var(--muted);font-size:1rem}
 .st{font-size:.9rem;font-weight:700;margin-top:6px}
 .go{margin-top:auto;padding-top:8px;font-weight:800;color:#5E3AA8}
+.geo .ico{background:#E1EEFB}.geo .go{color:#1D5FA8}
 .foot{margin-top:28px;font-size:.88rem;color:var(--muted)}
 </style>
 </head>
@@ -39,12 +40,22 @@ a.ramo:active{transform:scale(.98)}
       <div class="st" id="st-len"></div>
       <div class="go">Entrar →</div>
     </a>
+    <a class="ramo geo" href="geografia/">
+      <div class="ico">🌎</div>
+      <h2>Geografía</h2>
+      <p>Viaja por el mundo: continentes, océanos y los 195 países con sus capitales. ¡Juega y gana puntos!</p>
+      <div class="st" id="st-geo"></div>
+      <div class="go">Entrar →</div>
+    </a>
   </div>
   <p class="foot">Consejo: en Safari, toca Compartir → «Agregar a inicio» para tener esta página como una app.</p>
 </main>
 <script>
 (function () {
   function read(k) { try { return JSON.parse(localStorage.getItem(k)) || null; } catch (e) { return null; } }
+  var g = read("augusta-geografia-v1"), eg = document.getElementById("st-geo");
+  if (!g) eg.innerHTML = '<span style="color:#5B6675">Sin empezar</span>';
+  else { var med = Object.keys(g.best || {}).filter(function (k) { return g.best[k].medal; }).length; eg.innerHTML = '<span style="color:#23915F">' + Object.keys(g.seen || {}).length + ' de 195 países · ⭐ ' + (g.points || 0) + ' puntos · ' + med + ' medallas</span>'; }
   var db = read("augusta-lenguaje-2b-v1"), el = document.getElementById("st-len");
   if (!db) { el.innerHTML = '<span style="color:#5B6675">Sin empezar</span>'; return; }
   var done = Object.keys(db.done || {}).filter(function (k) { return db.done[k]; }).length, h = (db.history || []).slice(-1)[0];
